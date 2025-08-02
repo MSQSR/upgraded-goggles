@@ -9,7 +9,7 @@
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
       text-align: center;
-      padding-top: 50px;
+      padding-top: 30px;
     }
     #wheel {
       margin: auto;
@@ -33,47 +33,73 @@
       box-sizing: border-box;
       color: #fff;
       font-weight: bold;
+      font-size: 12px;
     }
-    #spinBtn {
-      margin-top: 30px;
-      padding: 10px 30px;
-      font-size: 18px;
-      background-color: #00ffae;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    button, input {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-bottom: 10px;
     }
     #result {
-      margin-top: 20px;
-      font-size: 24px;
+      font-size: 20px;
       font-weight: bold;
+      margin-top: 15px;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    input[type="number"] {
+      width: 80px;
     }
   </style>
 </head>
 <body>
 
   <h1>🎯 Upgraded Goggles</h1>
-  <div id="wheel"></div>
+  <div>
+    💰 Balance: <span id="balance">1000</span> credits |
+    ⚙️ Tokens: <span id="tokens">0</span>
+  </div>
+  <br>
+  <label>Bet Amount: </label>
+  <input type="number" id="betAmount" value="100" min="1">
+  <br>
   <button id="spinBtn">SPIN</button>
+  <div id="wheel"></div>
   <div id="result"></div>
+  <div id="status"></div>
 
   <script>
+    let balance = 1000;
+    let tokens = 0;
+
     const outcomes = [
-      { label: 'x2', color: '#28a745' },
-      { label: 'x5', color: '#007bff' },
-      { label: '🔥 Fire Vision', color: '#dc3545' },
-      { label: '💀 Skull (Lose)', color: '#6c757d' },
-      { label: '👁️ Eagle Eye x10', color: '#ffc107' },
-      { label: '⚙️ Upgrade Token', color: '#17a2b8' },
-      { label: '❌ Nothing', color: '#343a40' },
-      { label: 'x3', color: '#6610f2' }
+      { label: 'x2', color: '#28a745', type: 'multiplier', value: 2 },
+      { label: 'x5', color: '#007bff', type: 'multiplier', value: 5 },
+      { label: '🔥 Fire Vision', color: '#dc3545', type: 'bonus', value: 3 },
+      { label: '💀 Skull (Lose)', color: '#6c757d', type: 'lose' },
+      { label: '👁️ Eagle Eye x10', color: '#ffc107', type: 'multiplier', value: 10 },
+      { label: '⚙️ Upgrade Token', color: '#17a2b8', type: 'token' },
+      { label: '❌ Nothing', color: '#343a40', type: 'none' },
+      { label: 'x3', color: '#6610f2', type: 'multiplier', value: 3 }
     ];
 
     const wheel = document.getElementById('wheel');
     const spinBtn = document.getElementById('spinBtn');
     const result = document.getElementById('result');
+    const status = document.getElementById('status');
+    const balanceEl = document.getElementById('balance');
+    const tokenEl = document.getElementById('tokens');
+    const betInput = document.getElementById('betAmount');
 
     let currentRotation = 0;
+
+    function updateUI() {
+      balanceEl.innerText = balance;
+      tokenEl.innerText = tokens;
+    }
 
     function createWheel() {
       const angle = 360 / outcomes.length;
@@ -88,6 +114,18 @@
     }
 
     function spinWheel() {
+      const bet = parseInt(betInput.value);
+
+      if (isNaN(bet) || bet <= 0 || bet > balance) {
+        status.innerText = "❌ Invalid bet amount.";
+        return;
+      }
+
+      balance -= bet;
+      updateUI();
+      result.innerText = '';
+      status.innerText = 'Spinning...';
+
       const spins = 5 + Math.floor(Math.random() * 5);
       const degrees = 360 * spins + Math.floor(Math.random() * 360);
       currentRotation += degrees;
@@ -99,13 +137,32 @@
       const outcome = outcomes[index];
 
       setTimeout(() => {
-        result.innerText = `🎉 Result: ${outcome.label}`;
+        let message = `🎯 Result: ${outcome.label}`;
+        if (outcome.type === 'multiplier') {
+          const win = bet * outcome.value;
+          balance += win;
+          message += ` — You won ${win} credits!`;
+        } else if (outcome.type === 'bonus') {
+          const win = bet * outcome.value;
+          balance += win;
+          message += ` — Bonus round! You won ${win} credits!`;
+        } else if (outcome.type === 'token') {
+          tokens += 1;
+          message += ` — You earned an Upgrade Token!`;
+        } else if (outcome.type === 'lose') {
+          message += ` — You lost your bet.`;
+        } else {
+          message += ` — No win this time.`;
+        }
+        updateUI();
+        result.innerText = message;
+        status.innerText = '';
       }, 4000);
     }
 
     createWheel();
     spinBtn.addEventListener('click', spinWheel);
+    updateUI();
   </script>
-
 </body>
 </html>
