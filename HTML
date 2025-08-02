@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upgraded Goggles</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    #wheel {
+      margin: auto;
+      width: 300px;
+      height: 300px;
+      border: 10px solid #444;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      transform: rotate(0deg);
+      transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .segment {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      transform-origin: 100% 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+      text-align: right;
+      padding: 10px;
+      box-sizing: border-box;
+      color: #fff;
+      font-weight: bold;
+    }
+    #spinBtn {
+      margin-top: 30px;
+      padding: 10px 30px;
+      font-size: 18px;
+      background-color: #00ffae;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 Upgraded Goggles</h1>
+  <div id="wheel"></div>
+  <button id="spinBtn">SPIN</button>
+  <div id="result"></div>
+
+  <script>
+    const outcomes = [
+      { label: 'x2', color: '#28a745' },
+      { label: 'x5', color: '#007bff' },
+      { label: '🔥 Fire Vision', color: '#dc3545' },
+      { label: '💀 Skull (Lose)', color: '#6c757d' },
+      { label: '👁️ Eagle Eye x10', color: '#ffc107' },
+      { label: '⚙️ Upgrade Token', color: '#17a2b8' },
+      { label: '❌ Nothing', color: '#343a40' },
+      { label: 'x3', color: '#6610f2' }
+    ];
+
+    const wheel = document.getElementById('wheel');
+    const spinBtn = document.getElementById('spinBtn');
+    const result = document.getElementById('result');
+
+    let currentRotation = 0;
+
+    function createWheel() {
+      const angle = 360 / outcomes.length;
+      outcomes.forEach((outcome, i) => {
+        const seg = document.createElement('div');
+        seg.className = 'segment';
+        seg.style.backgroundColor = outcome.color;
+        seg.style.transform = `rotate(${i * angle}deg) skewY(-${90 - angle}deg)`;
+        seg.innerText = outcome.label;
+        wheel.appendChild(seg);
+      });
+    }
+
+    function spinWheel() {
+      const spins = 5 + Math.floor(Math.random() * 5);
+      const degrees = 360 * spins + Math.floor(Math.random() * 360);
+      currentRotation += degrees;
+      wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+      const segmentAngle = 360 / outcomes.length;
+      const normalizedDeg = (currentRotation % 360 + 360) % 360;
+      const index = Math.floor(((360 - normalizedDeg) % 360) / segmentAngle);
+      const outcome = outcomes[index];
+
+      setTimeout(() => {
+        result.innerText = `🎉 Result: ${outcome.label}`;
+      }, 4000);
+    }
+
+    createWheel();
+    spinBtn.addEventListener('click', spinWheel);
+  </script>
+
+</body>
+</html>
